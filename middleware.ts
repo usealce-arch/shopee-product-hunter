@@ -4,11 +4,31 @@ import { createServerClient } from "@supabase/ssr"
 
 const publicRoutes = ["/", "/login", "/signup"]
 const authApiRoutes = ["/api/auth/signup", "/api/auth/login", "/api/auth/logout"]
+const alwaysPublicApi = ["/api/health", "/api/categories"]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (publicRoutes.includes(pathname) || authApiRoutes.includes(pathname)) {
+    return NextResponse.next()
+  }
+
+  if (alwaysPublicApi.some((r) => pathname.startsWith(r))) {
+    return NextResponse.next()
+  }
+
+  // Demo mode: if demo cookie is set, allow access
+  const demoMode = request.cookies.get("demo_mode")?.value === "true"
+  if (demoMode) {
+    return NextResponse.next()
+  }
+
+  // Try Supabase auth if tokens look valid (JWT format)
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+  const isRealToken = anonKey.startsWith("eyJ")
+
+  if (!isRealToken) {
+    // Supabase not configured — allow all access
     return NextResponse.next()
   }
 
@@ -18,7 +38,7 @@ export async function middleware(request: NextRequest) {
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    anonKey,
     {
       cookies: {
         getAll() {
@@ -43,9 +63,9 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user && (pathname.startsWith("/dashboard") || pathname.startsWith("/analytics") || pathname.startsWith("/api/"))) {
+  if (!user && (pathname.startsWith("/dashboard") || pathname.startsWith("/analytics") || pathname.startsWith("/settings") || pathname.startsWith("/api/"))) {
     if (pathname.startsWith("/api/")) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
+      return NextResponse.json({ error: "Nao autorizado" }, { status: 401 })
     }
     const loginUrl = new URL("/login", request.url)
     return NextResponse.redirect(loginUrl)

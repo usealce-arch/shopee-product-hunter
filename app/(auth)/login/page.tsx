@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { signIn } from "@/lib/auth"
 import { signInSchema } from "@/lib/validations"
+import { Zap } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -33,10 +34,15 @@ export default function LoginPage() {
       await signIn(email, password)
       router.push("/dashboard")
     } catch {
-      setError("Email ou senha inválidos")
+      setError("Email ou senha invalidos")
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleDemoMode = () => {
+    document.cookie = "demo_mode=true; path=/; max-age=86400"
+    router.push("/dashboard")
   }
 
   return (
@@ -68,7 +74,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="********"
                 disabled={isLoading}
                 required
               />
@@ -84,12 +90,34 @@ export default function LoginPage() {
               {isLoading ? "Entrando..." : "Entrar"}
             </Button>
           </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-700" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">ou</span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full border-primary-500/50 text-primary-500 hover:bg-primary-500/10"
+            onClick={handleDemoMode}
+          >
+            <Zap size={16} className="mr-2" />
+            Entrar como Demo
+          </Button>
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            Acesse o dashboard com dados de demonstracao
+          </p>
         </CardContent>
         <CardFooter className="justify-center">
           <p className="text-sm text-muted-foreground">
-            Não tem conta?{" "}
+            Nao tem conta?{" "}
             <Link href="/signup" className="text-primary-500 hover:text-primary-400">
-              Criar conta grátis →
+              Criar conta gratis
             </Link>
           </p>
         </CardFooter>
