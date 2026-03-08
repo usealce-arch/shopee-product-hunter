@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Star, ShoppingCart, Users, Copy, Calculator, TrendingUp, TrendingDown, Minus, Sun } from "lucide-react"
+import { Star, ShoppingCart, Users, Copy, Calculator, Sun, Brain, Loader2, ThumbsUp, ThumbsDown, AlertTriangle } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -34,6 +34,16 @@ interface SeasonalPattern {
   performanceScore: number
 }
 
+interface AIAnalysis {
+  summary: string
+  strengths: string[]
+  weaknesses: string[]
+  recommendation: "forte" | "moderada" | "fraca"
+  tips: string[]
+  bestStrategy: string
+  riskLevel: "baixo" | "medio" | "alto"
+}
+
 export function ProductDetailModal({
   product,
   isOpen,
@@ -48,6 +58,8 @@ export function ProductDetailModal({
   const [history, setHistory] = useState<HistoryPoint[]>([])
   const [seasonal, setSeasonal] = useState<SeasonalPattern[]>([])
   const [bestMonth, setBestMonth] = useState("")
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null)
+  const [aiLoading, setAiLoading] = useState(false)
 
   useEffect(() => {
     if (!product || !isOpen) return
@@ -95,6 +107,19 @@ export function ProductDetailModal({
         }
       })
       .catch(() => {})
+
+    // Fetch AI analysis
+    setAiAnalysis(null)
+    setAiLoading(true)
+    fetch(`/api/analysis/product?productId=${product.id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.analysis) {
+          setAiAnalysis(data.analysis)
+        }
+      })
+      .catch(() => {})
+      .finally(() => setAiLoading(false))
   }, [product, isOpen])
 
   if (!product) return null
@@ -203,10 +228,104 @@ export function ProductDetailModal({
           </div>
         )}
 
-        {/* Recomendação */}
+        {/* Analise IA */}
+        <div className="bg-card rounded-lg p-4 border border-border">
+          <div className="flex items-center gap-2 mb-3">
+            <Brain size={16} className="text-purple-400" />
+            <h3 className="text-sm font-medium text-muted-foreground uppercase">
+              Analise IA (Gemini)
+            </h3>
+            {aiAnalysis && (
+              <Badge
+                variant="outline"
+                className={`text-xs ${
+                  aiAnalysis.recommendation === "forte"
+                    ? "text-green-400 border-green-400/30"
+                    : aiAnalysis.recommendation === "fraca"
+                      ? "text-red-400 border-red-400/30"
+                      : "text-yellow-400 border-yellow-400/30"
+                }`}
+              >
+                {aiAnalysis.recommendation === "forte" ? "Recomendacao FORTE" :
+                  aiAnalysis.recommendation === "fraca" ? "Recomendacao FRACA" : "Recomendacao MODERADA"}
+              </Badge>
+            )}
+          </div>
+
+          {aiLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground py-4">
+              <Loader2 size={16} className="animate-spin" />
+              <span className="text-sm">Analisando com IA...</span>
+            </div>
+          ) : aiAnalysis ? (
+            <div className="space-y-3">
+              <p className="text-sm text-slate-300">{aiAnalysis.summary}</p>
+
+              {aiAnalysis.strengths.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-1 mb-1">
+                    <ThumbsUp size={12} className="text-green-400" />
+                    <span className="text-xs text-green-400 font-medium">Pontos fortes</span>
+                  </div>
+                  <ul className="space-y-1">
+                    {aiAnalysis.strengths.map((s, i) => (
+                      <li key={i} className="text-xs text-slate-400 pl-4">• {s}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {aiAnalysis.weaknesses.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-1 mb-1">
+                    <ThumbsDown size={12} className="text-red-400" />
+                    <span className="text-xs text-red-400 font-medium">Pontos fracos</span>
+                  </div>
+                  <ul className="space-y-1">
+                    {aiAnalysis.weaknesses.map((w, i) => (
+                      <li key={i} className="text-xs text-slate-400 pl-4">• {w}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {aiAnalysis.tips.length > 0 && (
+                <div>
+                  <span className="text-xs text-primary-500 font-medium">Dicas para promover:</span>
+                  <ul className="space-y-1 mt-1">
+                    {aiAnalysis.tips.map((t, i) => (
+                      <li key={i} className="text-xs text-slate-400 pl-4">• {t}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {aiAnalysis.bestStrategy && (
+                <div className="bg-slate-800/50 rounded p-2 mt-2">
+                  <span className="text-xs text-muted-foreground">Melhor estrategia: </span>
+                  <span className="text-xs text-white">{aiAnalysis.bestStrategy}</span>
+                </div>
+              )}
+
+              <div className="flex gap-2 mt-2">
+                <Badge variant="outline" className={`text-xs ${
+                  aiAnalysis.riskLevel === "baixo" ? "text-green-400" :
+                  aiAnalysis.riskLevel === "alto" ? "text-red-400" : "text-yellow-400"
+                }`}>
+                  <AlertTriangle size={10} className="mr-1" />
+                  Risco {aiAnalysis.riskLevel}
+                </Badge>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">Analise indisponivel</p>
+          )}
+        </div>
+
+        {/* Recomendacao ROI */}
         <div className="bg-card rounded-lg p-4 border border-border">
           <h3 className="text-sm font-medium text-muted-foreground uppercase mb-3">
-            Recomendação
+            Estimativa de Retorno
           </h3>
           <p className="text-white mb-2">
             Invista{" "}
@@ -218,10 +337,10 @@ export function ProductDetailModal({
           <div className="flex gap-2">
             <Badge variant="outline" className="text-xs">
               {((product as Record<string, unknown>).competition_level as string) === "low"
-                ? "Competição BAIXA"
+                ? "Competicao BAIXA"
                 : ((product as Record<string, unknown>).competition_level as string) === "high"
-                  ? "Competição ALTA"
-                  : "Competição MÉDIA"}
+                  ? "Competicao ALTA"
+                  : "Competicao MEDIA"}
             </Badge>
           </div>
         </div>
