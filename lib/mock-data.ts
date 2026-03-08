@@ -2,12 +2,14 @@ import type { Tables } from "@/types/database"
 
 export type ProductWithScore = Tables<"products_current"> & {
   trend_direction?: "up" | "stable" | "down"
+  category?: string
 }
 
 export const MOCK_PRODUCTS: ProductWithScore[] = [
   {
     id: "mock-1",
     shopee_product_id: "sh-10001",
+    category: "eletronicos",
     title: "Fone Bluetooth TWS Pro Max Bass",
     price: 45.9,
     original_price: 89.9,
@@ -39,6 +41,7 @@ export const MOCK_PRODUCTS: ProductWithScore[] = [
   {
     id: "mock-2",
     shopee_product_id: "sh-10002",
+    category: "eletronicos",
     title: "Camera de Seguranca WiFi 360 Full HD",
     price: 79.9,
     original_price: 149.9,
@@ -70,6 +73,7 @@ export const MOCK_PRODUCTS: ProductWithScore[] = [
   {
     id: "mock-3",
     shopee_product_id: "sh-10003",
+    category: "beleza",
     title: "Kit Maquiagem Completo 24 Pecas Profissional",
     price: 34.5,
     original_price: 69.9,
@@ -101,6 +105,7 @@ export const MOCK_PRODUCTS: ProductWithScore[] = [
   {
     id: "mock-4",
     shopee_product_id: "sh-10004",
+    category: "casa",
     title: "Organizador de Maquiagem Acrilico Giratorio",
     price: 52.0,
     original_price: 89.0,
@@ -132,6 +137,7 @@ export const MOCK_PRODUCTS: ProductWithScore[] = [
   {
     id: "mock-5",
     shopee_product_id: "sh-10005",
+    category: "eletronicos",
     title: "Capa iPhone 15 Pro Max Silicone Premium",
     price: 19.9,
     original_price: null,
@@ -163,6 +169,7 @@ export const MOCK_PRODUCTS: ProductWithScore[] = [
   {
     id: "mock-6",
     shopee_product_id: "sh-10006",
+    category: "casa",
     title: "Luminaria LED Mesa Escritorio Touch Dimmer",
     price: 62.0,
     original_price: 120.0,
@@ -194,6 +201,7 @@ export const MOCK_PRODUCTS: ProductWithScore[] = [
   {
     id: "mock-7",
     shopee_product_id: "sh-10007",
+    category: "eletronicos",
     title: "Mini Projetor Portatil LED 4K WiFi HDMI",
     price: 189.9,
     original_price: 399.9,
@@ -225,6 +233,7 @@ export const MOCK_PRODUCTS: ProductWithScore[] = [
   {
     id: "mock-8",
     shopee_product_id: "sh-10008",
+    category: "esportes",
     title: "Relogio Smartwatch Bluetooth Monitor Cardiaco",
     price: 75.0,
     original_price: 159.0,

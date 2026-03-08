@@ -14,11 +14,13 @@ import {
 
 const categories = [
   { value: "all", label: "Todas categorias" },
-  { value: "eletronicos", label: "Eletrônicos" },
-  { value: "casa", label: "Casa & Decoração" },
+  { value: "eletronicos", label: "Eletronicos" },
+  { value: "casa", label: "Casa & Decoracao" },
   { value: "moda", label: "Moda" },
   { value: "beleza", label: "Beleza" },
   { value: "esportes", label: "Esportes" },
+  { value: "pets", label: "Pet Shop" },
+  { value: "baby", label: "Bebes" },
 ]
 
 export function SearchBar({

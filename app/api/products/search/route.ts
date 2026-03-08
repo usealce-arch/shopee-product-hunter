@@ -35,6 +35,9 @@ export async function POST(request: Request) {
     // Fallback to mock data with filters
     let filtered = [...MOCK_PRODUCTS]
 
+    if (category && category !== "all") {
+      filtered = filtered.filter((p) => p.category === category)
+    }
     if (maxPrice) {
       filtered = filtered.filter((p) => p.price <= Number(maxPrice))
     }
@@ -42,10 +45,6 @@ export async function POST(request: Request) {
       filtered = filtered.filter(
         (p) => (p.opportunity_score ?? 0) >= Number(minScore)
       )
-    }
-    if (category && category !== "all") {
-      // Mock: just return all since we don't have category on mock products
-      filtered = filtered
     }
 
     filtered.sort(

@@ -10,68 +10,6 @@ import { ProductDetailModal } from "@/components/ProductDetailModal"
 import { ROICalculator } from "@/components/ROICalculator"
 import { Button } from "@/components/ui/button"
 
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: "1",
-    title: "Fone Bluetooth TWS Pro Max Bass",
-    price: 45.9,
-    original_price: 89.9,
-    estimated_roi_percent: 185,
-    opportunity_score: 87,
-    trend_direction: "up",
-    sales_per_month: 3200,
-    commission_percentage: 12,
-    affiliate_link: "https://shopee.com.br/product/1",
-  },
-  {
-    id: "2",
-    title: "Câmera de Segurança WiFi 360° Full HD",
-    price: 79.9,
-    original_price: 149.9,
-    estimated_roi_percent: 142,
-    opportunity_score: 78,
-    trend_direction: "up",
-    sales_per_month: 1800,
-    commission_percentage: 15,
-    affiliate_link: "https://shopee.com.br/product/2",
-  },
-  {
-    id: "3",
-    title: "Kit Maquiagem Completo 24 Peças Profissional",
-    price: 34.5,
-    original_price: 69.9,
-    estimated_roi_percent: 95,
-    opportunity_score: 65,
-    trend_direction: "stable",
-    sales_per_month: 2100,
-    commission_percentage: 10,
-    affiliate_link: "https://shopee.com.br/product/3",
-  },
-  {
-    id: "4",
-    title: "Organizador de Maquiagem Acrílico Giratório",
-    price: 52.0,
-    original_price: 89.0,
-    estimated_roi_percent: 72,
-    opportunity_score: 55,
-    trend_direction: "stable",
-    sales_per_month: 950,
-    commission_percentage: 8,
-    affiliate_link: "https://shopee.com.br/product/4",
-  },
-  {
-    id: "5",
-    title: "Capa iPhone 15 Pro Max Silicone Premium",
-    price: 19.9,
-    estimated_roi_percent: 35,
-    opportunity_score: 42,
-    trend_direction: "down",
-    sales_per_month: 5400,
-    commission_percentage: 6,
-    affiliate_link: "https://shopee.com.br/product/5",
-  },
-]
-
 export default function DashboardPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -79,14 +17,62 @@ export default function DashboardPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
   const [calculatorOpen, setCalculatorOpen] = useState(false)
+  const [searchInfo, setSearchInfo] = useState("")
 
-  const handleSearch = async () => {
+  const handleSearch = async (params: {
+    category: string
+    maxPrice: number
+    minScore: number
+  }) => {
     setIsSearching(true)
     setHasSearched(true)
-    // Simula busca com delay
-    await new Promise((r) => setTimeout(r, 1500))
-    setProducts(MOCK_PRODUCTS)
-    setIsSearching(false)
+    setSearchInfo("")
+
+    try {
+      const res = await fetch("/api/products/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: params.category,
+          maxPrice: params.maxPrice < 99999 ? params.maxPrice : undefined,
+          minScore: params.minScore > 0 ? params.minScore : undefined,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (data.products) {
+        const mapped: Product[] = data.products.map((p: Record<string, unknown>) => ({
+          id: p.id as string,
+          title: p.title as string,
+          price: p.price as number,
+          original_price: (p.original_price as number) ?? undefined,
+          estimated_roi_percent: (p.estimated_roi_percent as number) ?? 0,
+          opportunity_score: (p.opportunity_score as number) ?? 0,
+          trend_direction: (p.trend_direction as string) ?? "stable",
+          sales_per_month: (p.sales_per_month as number) ?? 0,
+          commission_percentage: (p.commission_percentage as number) ?? 10,
+          affiliate_link: (p.affiliate_link as string) ?? "",
+        }))
+        setProducts(mapped)
+        if (data.source === "mock") {
+          setSearchInfo(`${mapped.length} produtos encontrados (demo)`)
+        } else {
+          setSearchInfo(`${mapped.length} produtos encontrados`)
+        }
+      } else {
+        setProducts([])
+      }
+    } catch {
+      setProducts([])
+      setSearchInfo("Erro ao buscar produtos")
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  const handleQuickSearch = () => {
+    handleSearch({ category: "all", maxPrice: 99999, minScore: 0 })
   }
 
   const handleProductClick = (product: Product) => {
@@ -106,7 +92,10 @@ export default function DashboardPage() {
 
   const avgScore =
     products.length > 0
-      ? Math.round(products.reduce((sum, p) => sum + (p.opportunity_score ?? 0), 0) / products.length)
+      ? Math.round(
+          products.reduce((sum, p) => sum + (p.opportunity_score ?? 0), 0) /
+            products.length
+        )
       : 0
 
   const bestROI =
@@ -121,13 +110,16 @@ export default function DashboardPage() {
       {/* KPI Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <StatCard label="Produtos Encontrados" value={products.length} />
-        <StatCard label="Score Médio" value={avgScore} progress={avgScore} />
+        <StatCard label="Score Medio" value={avgScore} progress={avgScore} />
         <StatCard label="Melhor ROI" value={`${bestROI}%`} />
       </div>
 
       {/* Search */}
       <div className="mb-6">
         <SearchBar onSearch={handleSearch} isLoading={isSearching} />
+        {searchInfo && (
+          <p className="text-xs text-muted-foreground mt-2 ml-1">{searchInfo}</p>
+        )}
       </div>
 
       {/* Content */}
@@ -138,10 +130,11 @@ export default function DashboardPage() {
             Bem-vindo ao Product Hunter!
           </h2>
           <p className="text-muted-foreground mb-6">
-            Encontre os produtos mais rentáveis da Shopee para promover como afiliado
+            Encontre os produtos mais rentaveis da Shopee para promover como
+            afiliado
           </p>
           <Button
-            onClick={handleSearch}
+            onClick={handleQuickSearch}
             className="bg-primary-500 hover:bg-primary-600"
           >
             Buscar Produtos
@@ -153,7 +146,9 @@ export default function DashboardPage() {
           <h2 className="text-lg font-bold text-white mb-2">
             Nenhum produto encontrado
           </h2>
-          <p className="text-muted-foreground">Tente ajustar os filtros de busca</p>
+          <p className="text-muted-foreground">
+            Tente ajustar os filtros de busca
+          </p>
         </div>
       ) : (
         <OpportunityTable
