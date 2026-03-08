@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
 import { createServerClient } from "@/lib/db"
-import { MOCK_PRODUCTS } from "@/lib/mock-data"
+import { generateProducts } from "@/lib/product-generator"
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { category, maxPrice, minScore } = body
+    const { category, maxPrice, minScore, keyword } = body
 
-    // Try real DB first
+    // 1. Try real DB first
     try {
       const db = createServerClient()
       let query = db
@@ -16,11 +16,17 @@ export async function POST(request: Request) {
         .order("opportunity_score", { ascending: false })
         .limit(50)
 
+      if (category && category !== "all") {
+        query = query.eq("category", category)
+      }
       if (maxPrice) {
         query = query.lte("price", maxPrice)
       }
       if (minScore) {
         query = query.gte("opportunity_score", minScore)
+      }
+      if (keyword) {
+        query = query.ilike("title", `%${keyword}%`)
       }
 
       const { data, error } = await query
@@ -29,29 +35,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ products: data, source: "database" })
       }
     } catch {
-      // DB unavailable, fall through to mock
+      // DB unavailable, fall through
     }
 
-    // Fallback to mock data with filters
-    let filtered = [...MOCK_PRODUCTS]
-
-    if (category && category !== "all") {
-      filtered = filtered.filter((p) => p.category === category)
-    }
-    if (maxPrice) {
-      filtered = filtered.filter((p) => p.price <= Number(maxPrice))
-    }
-    if (minScore) {
-      filtered = filtered.filter(
-        (p) => (p.opportunity_score ?? 0) >= Number(minScore)
-      )
-    }
-
-    filtered.sort(
-      (a, b) => (b.opportunity_score ?? 0) - (a.opportunity_score ?? 0)
+    // 2. Generate realistic products as smart demo
+    const generated = generateProducts(
+      category || "all",
+      maxPrice ? Number(maxPrice) : undefined,
+      minScore ? Number(minScore) : undefined,
+      30
     )
 
-    return NextResponse.json({ products: filtered, source: "mock" })
+    return NextResponse.json({ products: generated, source: "generated" })
   } catch {
     return NextResponse.json(
       { error: "Erro ao buscar produtos" },

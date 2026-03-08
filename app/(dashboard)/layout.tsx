@@ -20,7 +20,7 @@ export default function DashboardLayout({
       <div className="md:hidden flex items-center justify-between p-4 bg-slate-900 border-b border-slate-700">
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger asChild>
-            <button className="text-slate-400 hover:text-white">
+            <button className="text-slate-400 hover:text-white p-2 -ml-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
               <Menu size={24} />
             </button>
           </SheetTrigger>
@@ -43,7 +43,7 @@ export default function DashboardLayout({
         </aside>
 
         {/* Content */}
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto min-w-0">
           <div className="max-w-6xl mx-auto">{children}</div>
         </main>
       </div>

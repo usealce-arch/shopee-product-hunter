@@ -46,7 +46,7 @@ export function ROICalculator({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
+      <DialogContent className="sm:max-w-3xl sm:max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white">
             <Calculator size={20} className="text-primary-500" />
@@ -62,7 +62,7 @@ export function ROICalculator({
           <label className="text-sm text-muted-foreground">
             Quanto quer investir em anúncios?
           </label>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
                 R$
@@ -72,20 +72,22 @@ export function ROICalculator({
                 value={customSpend}
                 onChange={(e) => setCustomSpend(e.target.value)}
                 placeholder="Valor personalizado"
-                className="pl-8"
+                className="pl-8 h-11"
               />
             </div>
-            {quickAmounts.map((amount) => (
-              <Button
-                key={amount}
-                variant="outline"
-                size="sm"
-                onClick={() => setCustomSpend(String(amount))}
-                className="whitespace-nowrap"
-              >
-                R$ {amount}
-              </Button>
-            ))}
+            <div className="flex gap-2">
+              {quickAmounts.map((amount) => (
+                <Button
+                  key={amount}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCustomSpend(String(amount))}
+                  className="whitespace-nowrap h-11 flex-1 sm:flex-none"
+                >
+                  R$ {amount}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 

@@ -23,6 +23,7 @@ export default function DashboardPage() {
     category: string
     maxPrice: number
     minScore: number
+    keyword: string
   }) => {
     setIsSearching(true)
     setHasSearched(true)
@@ -36,6 +37,7 @@ export default function DashboardPage() {
           category: params.category,
           maxPrice: params.maxPrice < 99999 ? params.maxPrice : undefined,
           minScore: params.minScore > 0 ? params.minScore : undefined,
+          keyword: params.keyword || undefined,
         }),
       })
 
@@ -55,11 +57,8 @@ export default function DashboardPage() {
           affiliate_link: (p.affiliate_link as string) ?? "",
         }))
         setProducts(mapped)
-        if (data.source === "mock") {
-          setSearchInfo(`${mapped.length} produtos encontrados (demo)`)
-        } else {
-          setSearchInfo(`${mapped.length} produtos encontrados`)
-        }
+        const sourceLabel = data.source === "database" ? "" : " (simulado)"
+        setSearchInfo(`${mapped.length} produtos encontrados${sourceLabel}`)
       } else {
         setProducts([])
       }
@@ -72,7 +71,7 @@ export default function DashboardPage() {
   }
 
   const handleQuickSearch = () => {
-    handleSearch({ category: "all", maxPrice: 99999, minScore: 0 })
+    handleSearch({ category: "all", maxPrice: 99999, minScore: 0, keyword: "" })
   }
 
   const handleProductClick = (product: Product) => {
@@ -124,12 +123,12 @@ export default function DashboardPage() {
 
       {/* Content */}
       {!hasSearched ? (
-        <div className="bg-card rounded-lg border border-border p-12 text-center">
+        <div className="bg-card rounded-lg border border-border p-6 sm:p-12 text-center">
           <Rocket size={48} className="mx-auto text-primary-500 mb-4" />
-          <h2 className="text-xl font-bold text-white mb-2">
+          <h2 className="text-lg sm:text-xl font-bold text-white mb-2">
             Bem-vindo ao Product Hunter!
           </h2>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-sm sm:text-base text-muted-foreground mb-6">
             Encontre os produtos mais rentaveis da Shopee para promover como
             afiliado
           </p>
@@ -141,12 +140,12 @@ export default function DashboardPage() {
           </Button>
         </div>
       ) : products.length === 0 && !isSearching ? (
-        <div className="bg-card rounded-lg border border-border p-12 text-center">
+        <div className="bg-card rounded-lg border border-border p-6 sm:p-12 text-center">
           <SearchX size={48} className="mx-auto text-muted-foreground mb-4" />
           <h2 className="text-lg font-bold text-white mb-2">
             Nenhum produto encontrado
           </h2>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Tente ajustar os filtros de busca
           </p>
         </div>

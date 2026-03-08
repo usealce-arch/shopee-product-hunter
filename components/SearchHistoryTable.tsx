@@ -27,9 +27,10 @@ export function SearchHistoryTable({ data }: { data: SearchRecord[] }) {
 
   return (
     <div className="bg-card rounded-lg border border-border overflow-hidden">
-      <h3 className="text-sm font-medium text-muted-foreground uppercase p-6 pb-3">
+      <h3 className="text-sm font-medium text-muted-foreground uppercase p-4 sm:p-6 pb-3">
         Histórico de Buscas
       </h3>
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-900 hover:bg-slate-900">
@@ -50,6 +51,7 @@ export function SearchHistoryTable({ data }: { data: SearchRecord[] }) {
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   )
 }
