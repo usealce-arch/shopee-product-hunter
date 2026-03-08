@@ -39,7 +39,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 export async function analyzeProduct(product: ProductData): Promise<GeminiAnalysis> {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
   const categoryLabel = CATEGORY_LABELS[product.category || "all"] || product.category || "Geral"
   const margin = product.original_price && product.original_price > product.price
@@ -99,7 +99,7 @@ Responda EXCLUSIVAMENTE neste formato JSON (sem markdown, sem backticks):
 }
 
 export async function analyzeProductBatch(products: ProductData[]): Promise<Record<string, GeminiAnalysis>> {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
   const productList = products.slice(0, 5).map((p, i) => {
     const categoryLabel = CATEGORY_LABELS[p.category || "all"] || "Geral"
